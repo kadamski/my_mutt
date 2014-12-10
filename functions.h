@@ -364,6 +364,11 @@ const struct binding_t OpCompose[] = { /* map: compose */
 const struct binding_t OpPost[] = { /* map: postpone */
   { "delete-entry",	OP_DELETE,	"d" },
   { "undelete-entry",	OP_UNDELETE,	"u" },
+  { "sidebar-scroll-up",	OP_SIDEBAR_SCROLL_UP, NULL },
+  { "sidebar-scroll-down",	OP_SIDEBAR_SCROLL_DOWN, NULL },
+  { "sidebar-next",		OP_SIDEBAR_NEXT, NULL },
+  { "sidebar-prev",		OP_SIDEBAR_PREV, NULL },
+  { "sidebar-open",		OP_SIDEBAR_OPEN, NULL },
   { NULL,		0,		NULL }
 };
 

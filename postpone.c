@@ -31,6 +31,7 @@
 #include "imap.h"
 #endif
 #include "mutt_crypt.h"
+#include "sidebar.h"
 
 #include <ctype.h>
 #include <unistd.h>
@@ -152,7 +153,7 @@ static void post_entry (char *s, size_t slen, MUTTMENU *menu, int entry)
 		     M_FORMAT_ARROWCURSOR);
 }
 
-static HEADER *select_msg (void)
+static int select_msg (HEADER **h)
 {
   MUTTMENU *menu;
   int i, done=0, r=-1;
@@ -201,6 +202,15 @@ static HEADER *select_msg (void)
 	done = 1;
 	break;
 
+      case OP_SIDEBAR_SCROLL_UP:
+      case OP_SIDEBAR_SCROLL_DOWN:
+      case OP_SIDEBAR_NEXT:
+      case OP_SIDEBAR_PREV:
+	scroll_sidebar(i, MENU_PAGER);
+	break;
+
+      case OP_SIDEBAR_OPEN:
+	r = -2; /* fall through */
       case OP_EXIT:
 	done = 1;
 	break;
@@ -209,7 +219,8 @@ static HEADER *select_msg (void)
 
   Sort = orig_sort;
   mutt_menuDestroy (&menu);
-  return (r > -1 ? PostContext->hdrs[r] : NULL);
+  *h = (r > -1 ? PostContext->hdrs[r] : NULL);
+  return r;
 }
 
 /* args:
@@ -235,6 +246,7 @@ int mutt_get_postponed (CONTEXT *ctx, HEADER *hdr, HEADER **cur, char *fcc, size
   LIST *next;
   const char *p;
   int opt_delete;
+  int r;
 
   if (!Postponed)
     return (-1);
@@ -260,10 +272,13 @@ int mutt_get_postponed (CONTEXT *ctx, HEADER *hdr, HEADER **cur, char *fcc, size
     /* only one message, so just use that one. */
     h = PostContext->hdrs[0];
   }
-  else if ((h = select_msg ()) == NULL)
+  else if ((r = select_msg(&h)) < 0)
   {
     mx_close_mailbox (PostContext, NULL);
     FREE (&PostContext);
+    if (r == -2) {
+      code |= SENDMAILBOXCHANGED;
+    }
     return (-1);
   }
 

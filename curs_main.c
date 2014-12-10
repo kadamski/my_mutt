@@ -2090,7 +2090,11 @@ int mutt_index_menu (void)
       case OP_RECALL_MESSAGE:
 
 	CHECK_ATTACH;
-	ci_send_message (SENDPOSTPONED, NULL, NULL, Context, NULL);
+	if (ci_send_message (SENDPOSTPONED, NULL, NULL, Context, NULL) == -2) {
+            mutt_ungetch(0, OP_SIDEBAR_OPEN);
+            menu->redraw = REDRAW_FULL;
+            continue;
+        }
 	menu->redraw = REDRAW_FULL;
 	break;
 
